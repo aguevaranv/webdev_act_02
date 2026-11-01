@@ -3,6 +3,15 @@ import { obtenerTareasAPI } from './api.js';
 let tareas = [];
 let idEnEdicion = null;   // null = modo crear · un número = modo editar
 
+const filtros = {
+    estado: 'todas',
+    texto: '',
+    orden: 'fecha-desc'
+};
+
+const cargando = document.getElementById("cargando");
+const notificacion = document.getElementById("notificacion");
+
 //el estado y la función que crea una tarea
 function crearTarea(titulo, prioridad) {
     return { 
@@ -110,10 +119,53 @@ document.getElementById("formulario").addEventListener("submit", function (event
     guardarYActualizar();    // ← dibuja la lista y actualiza el dashboard
 });
 
+// Filtra por estado y por texto del título
+export function filtrarTareas(tareas, estado, texto) {
+    const busqueda = texto.trim().toLowerCase();
+
+    return tareas.filter(function (tarea) {
+        let cumpleEstado = true;
+        if (estado === 'pendientes') {
+            cumpleEstado = !tarea.completada;
+        } else if (estado === 'completadas') {
+            cumpleEstado = tarea.completada;
+        }
+
+        const cumpleTexto = tarea.titulo.toLowerCase().includes(busqueda);
+
+        return cumpleEstado && cumpleTexto;
+    });
+}
+
+const VALOR_PRIORIDAD = { Alta: 1, Media: 2, Baja: 3 };
+
+// Ordena una COPIA de la lista (sort modifica el arreglo original)
+export function ordenarTareas(tareas, criterio) {
+    const copia = [...tareas];
+
+    if (criterio === 'fecha-desc') {
+        copia.sort(function (a, b) {
+            return new Date(b.fechaCreacion) - new Date(a.fechaCreacion);
+        });
+    } else if (criterio === 'fecha-asc') {
+        copia.sort(function (a, b) {
+            return new Date(a.fechaCreacion) - new Date(b.fechaCreacion);
+        });
+    } else if (criterio === 'prioridad') {
+        copia.sort(function (a, b) {
+            return VALOR_PRIORIDAD[a.prioridad] - VALOR_PRIORIDAD[b.prioridad];
+        });
+    }
+
+    return copia;
+}
+
 //Actualizar todo
 function actualizarVista() { 
-    renderizarLista(tareas); 
-    actualizarDashboard(calcularMetricas(tareas));
+    const filtradas = filtrarTareas(tareas, filtros.estado, filtros.texto);
+    const visibles = ordenarTareas(filtradas, filtros.orden);
+    renderizarLista(visibles); // se dibujan las VISIBLES
+    actualizarDashboard(calcularMetricas(tareas)); // las métricas usan TODAS
 }
 
 function calcularMetricas(tareas) { 
@@ -175,6 +227,22 @@ function cancelarEdicion() {
 }
 
 document.getElementById("btn-cancelar").addEventListener("click", cancelarEdicion);
+
+// ----- Filtros, búsqueda y orden -----
+document.getElementById("buscar").addEventListener("input", function (evento) {
+    filtros.texto = evento.target.value;     // lo que escribió el usuario
+    actualizarVista();
+});
+
+document.getElementById("filtro-estado").addEventListener("change", function (evento) {
+    filtros.estado = evento.target.value;    // "todas", "pendientes" o "completadas"
+    actualizarVista();
+});
+
+document.getElementById("orden").addEventListener("change", function (evento) {
+    filtros.orden = evento.target.value;     // "fecha-desc", "fecha-asc" o "prioridad"
+    actualizarVista();
+});
 
 const CLAVE = 'taskmanager_tareas';
 
