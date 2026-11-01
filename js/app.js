@@ -105,7 +105,7 @@ document.getElementById("formulario").addEventListener("submit", function (event
     }
 
     cancelarEdicion();    // ← vuelve al modo crear y limpia el formulario
-    actualizarVista();    // ← dibuja la lista y actualiza el dashboard
+    guardarYActualizar();    // ← dibuja la lista y actualiza el dashboard
 });
 
 //Actualizar todo
@@ -136,7 +136,7 @@ function actualizarDashboard(metricas) {
 function alternarTarea(id) { 
     const tarea = tareas.find(function (t) { return t.id === id; }); 
     tarea.completada = !tarea.completada; // true ↔ false 
-    actualizarVista();
+    guardarYActualizar();
 }
 
 function eliminarTarea(id) { 
@@ -147,7 +147,7 @@ function eliminarTarea(id) {
     if (idEnEdicion === id) {
         cancelarEdicion();
     }
-    actualizarVista();
+    guardarYActualizar();
 }
 
 function empezarEdicion(id) {
@@ -173,3 +173,42 @@ function cancelarEdicion() {
 }
 
 document.getElementById("btn-cancelar").addEventListener("click", cancelarEdicion);
+
+const CLAVE = 'taskmanager_tareas';
+
+// ¿Ya se guardó algo antes? (aunque sea una lista vacía)
+function hayDatosGuardados() { 
+    return localStorage.getItem(CLAVE) !== null;
+}
+
+// Lee las tareas guardadas. Si no hay nada, devuelve un arreglo vacío.
+function cargarTareas() { 
+    const texto = localStorage.getItem(CLAVE); 
+    
+    if (texto === null) { 
+        return []; 
+    } 
+    
+    try { 
+        return JSON.parse(texto); 
+    } 
+    catch (error) { 
+        console.error('Los datos guardados están dañados:', error); 
+        return []; 
+    }
+}
+
+// Guarda todas las tareas como texto JSON
+function guardarTareas(tareas) { 
+    localStorage.setItem(CLAVE, JSON.stringify(tareas));
+}
+
+function guardarYActualizar() { 
+    guardarTareas(tareas); 
+    actualizarVista();
+}
+
+// Al iniciar:
+tareas = cargarTareas();
+actualizarVista();
+
