@@ -1,4 +1,5 @@
 let tareas = [];
+let idEnEdicion = null;   // null = modo crear · un número = modo editar
 
 //el estado y la función que crea una tarea
 function crearTarea(titulo, prioridad) {
@@ -33,19 +34,47 @@ function renderizarLista(lista) {
     lista.forEach(function (tarea) {
             const li = document.createElement("li");
             li.className = "tarea";
-            
+            if (tarea.completada) {
+                li.classList.add("completada");      // el CSS la tacha
+            }
+
+            // Checkbox
+            const check = document.createElement('input');
+            check.type = 'checkbox';
+            check.checked = tarea.completada;
+            check.addEventListener('change', function () {
+                alternarTarea(tarea.id);
+            });
+
+            // Titulo y prioridad
             const titulo = document.createElement("span");
+            titulo.className = "tarea-titulo";
             titulo.textContent = tarea.titulo; // textContent, NO innerHTML para evitar XSS
 
             const prioridad = document.createElement("span");
             prioridad.className = "prioridad prioridad-" + tarea.prioridad;
             prioridad.textContent = tarea.prioridad;
 
-            li.append(titulo, prioridad);
+            // Botón Editar
+            const btnEditar = document.createElement("button");
+            btnEditar.textContent = "Editar";
+            btnEditar.className = "boton-pequeno";
+            btnEditar.addEventListener("click", function () {
+                empezarEdicion(tarea.id);
+            });
+
+            // Botón Eliminar
+            const btnEliminar = document.createElement("button");
+            btnEliminar.textContent = "Eliminar";
+            btnEliminar.className = "boton-pequeno boton-eliminar";
+            btnEliminar.addEventListener("click", function () {
+                eliminarTarea(tarea.id);
+            });
+
+            li.append(check, titulo, prioridad, btnEditar, btnEliminar);
             ul.appendChild(li);
         });
-    }
-
+}
 
 //escuchar el submit
 document.getElementById("formulario").addEventListener("submit", function (evento) {
@@ -63,7 +92,84 @@ document.getElementById("formulario").addEventListener("submit", function (event
     }
     p.hidden = true;
 
-    tareas.push(crearTarea(titulo.trim(), prioridad));
-    renderizarLista(tareas);
-    evento.target.reset();
+    if (idEnEdicion === null) {
+        // CREAR
+        tareas.push(crearTarea(titulo.trim(), prioridad));
+    } else {
+        // EDITAR: busca la tarea y le cambia los datos
+        const tarea = tareas.find(function (t) {
+            return t.id === idEnEdicion;
+        });
+        tarea.titulo = titulo.trim();
+        tarea.prioridad = prioridad;
+    }
+
+    cancelarEdicion();    // ← vuelve al modo crear y limpia el formulario
+    actualizarVista();    // ← dibuja la lista y actualiza el dashboard
 });
+
+//Actualizar todo
+function actualizarVista() { 
+    renderizarLista(tareas); 
+    actualizarDashboard(calcularMetricas(tareas));
+}
+
+function calcularMetricas(tareas) { 
+    const completadas = tareas.filter(function (tarea) { 
+        return tarea.completada; 
+    }).length; 
+    
+    return { 
+        total: tareas.length, 
+        completadas: completadas, 
+        pendientes: tareas.length - completadas 
+    };
+}
+
+function actualizarDashboard(metricas) {
+    document.getElementById("total").textContent = metricas.total;
+    document.getElementById("pendientes").textContent = metricas.pendientes;
+    document.getElementById("completadas").textContent = metricas.completadas;
+}
+
+//Completar, eliminar y editar tareas
+function alternarTarea(id) { 
+    const tarea = tareas.find(function (t) { return t.id === id; }); 
+    tarea.completada = !tarea.completada; // true ↔ false 
+    actualizarVista();
+}
+
+function eliminarTarea(id) { 
+    if (!confirm("¿Eliminar esta tarea?")) { 
+        return; 
+    } 
+    tareas = tareas.filter(function (t) { return t.id !== id; }); // todas MENOS esa 
+    if (idEnEdicion === id) {
+        cancelarEdicion();
+    }
+    actualizarVista();
+}
+
+function empezarEdicion(id) {
+    const tarea = tareas.find(function (t) {
+        return t.id === id;
+    });
+
+    idEnEdicion = id;
+    document.getElementById("titulo").value = tarea.titulo;
+    document.getElementById("prioridad").value = tarea.prioridad;
+    document.getElementById("titulo-formulario").textContent = "Editar tarea";
+    document.getElementById("btn-guardar").textContent = "Guardar cambios";
+    document.getElementById("btn-cancelar").hidden = false;
+}
+
+function cancelarEdicion() {
+    idEnEdicion = null;
+    document.getElementById("formulario").reset();
+    document.getElementById("titulo-formulario").textContent = "Nueva tarea";
+    document.getElementById("btn-guardar").textContent = "Agregar tarea";
+    document.getElementById("btn-cancelar").hidden = true;
+    document.getElementById("error-formulario").hidden = true;
+}
+
+document.getElementById("btn-cancelar").addEventListener("click", cancelarEdicion);
