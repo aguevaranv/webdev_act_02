@@ -1,3 +1,5 @@
+import { obtenerTareasAPI } from './api.js';
+
 let tareas = [];
 let idEnEdicion = null;   // null = modo crear · un número = modo editar
 
@@ -208,7 +210,55 @@ function guardarYActualizar() {
     actualizarVista();
 }
 
-// Al iniciar:
-tareas = cargarTareas();
-actualizarVista();
+export function mostrarCargando(visible) {
+    cargando.hidden = !visible;
+}
+
+let temporizador;
+
+// tipo: "error" o "exito". Se oculta sola después de unos segundos.
+export function mostrarNotificacion(mensaje, tipo) {
+    notificacion.textContent = mensaje;
+    notificacion.className = 'notificacion notificacion-' + tipo;
+    notificacion.hidden = false;
+
+    clearTimeout(temporizador);
+    temporizador = setTimeout(function () {
+        notificacion.hidden = true;
+    }, 6000);
+}
+
+
+// ----- Inicio -----
+async function iniciar() {
+    tareas = cargarTareas();
+    actualizarVista();
+
+    // Solo se importa de la API la primera vez (localStorage vacío): así no se duplican
+    if (hayDatosGuardados()) {
+        return;
+    }
+
+    mostrarCargando(true);
+    try {
+        const tareasAPI = await obtenerTareasAPI();
+
+        // Se agregan solo las que no existen (por si el usuario creó alguna mientras cargaba)
+        const nuevas = tareasAPI.filter(function (tareaAPI) {
+            return !tareas.some(function (t) {
+                return t.id === tareaAPI.id;
+            });
+        });
+        tareas = tareas.concat(nuevas);
+        guardarYActualizar();
+        mostrarNotificacion('Se importaron ' + nuevas.length + ' tareas de ejemplo desde la API.', 'exito');
+    } catch (error) {
+        console.error('Error al cargar la API:', error);
+        mostrarNotificacion('No se pudieron cargar las tareas de ejemplo. Revisa tu conexión a internet; puedes seguir creando tareas.', 'error');
+    } finally {
+        mostrarCargando(false);
+    }
+}
+
+iniciar();
 
