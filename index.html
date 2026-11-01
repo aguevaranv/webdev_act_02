@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista de tareas</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+    <header class="encabezado">
+        <h1>TaskManager</h1>
+        <p>Organiza tus tareas offline.</p>
+    </header>
+
+    <!-- Notificaciones (errores de la API, avisos) -->
+    <div id="notificacion" class="notificacion" role="status" aria-live="polite" hidden></div>
+    
+    <!-- DASHBOARD DE METRICAS -->
+    <section class="dashboard" aria-label="Métricas">
+        <article class="metrica">
+            <span class="metrica-numero" id="total">0</span>
+            <span class="metrica-texto">Total</span>
+        </article>
+        <article class="metrica metrica-pendiente">
+            <span class="metrica-numero" id="pendientes">0</span>
+            <span class="metrica-texto">Pendientes</span>
+        </article>
+        <article class="metrica metrica-completada">
+            <span class="metrica-numero" id="completadas">0</span>
+            <span class="metrica-texto">Completadas</span>
+        </article>
+    </section>
+
+    <!-- FORMULARIO: CREAR / EDITAR -->
+    <section class="tarjeta">
+        <h2 id="titulo-formulario">Nueva tarea</h2>
+        <form id="formulario" novalidate>
+            <div class="campo">
+                <label for="titulo">Título</label>
+                <input type="text" id="titulo" maxlength="100" placeholder="Ej. Estudiar para la prueba de PHP">
+            </div>
+            <div class="campo">
+                <label for="prioridad">Prioridad</label>
+                <select id="prioridad">
+                    <option value="">Selecciona</option>
+                    <option value="Alta">Alta</option>
+                    <option value="Media">Media</option>
+                    <option value="Baja">Baja</option>
+                </select>
+            </div>
+            <p id="error-formulario" class="error" hidden></p>
+            <div class="acciones">
+                <button type="submit" id="btn-guardar" class="boton">Agregar tarea</button>
+                <button type="button" id="btn-cancelar" class="boton boton-secundario" hidden>Cancelar</button>
+            </div>
+        </form>
+    </section>
+
+    <!-- FILTROS, BUSQUEDA Y ORDEN -->
+    <section class="tarjeta herramientas">
+        <div class="campo">
+            <label for="buscar">Buscar por título</label>
+            <input type="search" id="buscar" placeholder="Escribe para buscar...">
+        </div>
+        <div class="campo">
+            <label for="filtro-estado">Estado</label>
+            <select id="filtro-estado">
+                <option value="todas">Todas</option>
+                <option value="pendientes">Pendientes</option>
+                <option value="completadas">Completadas</option>
+            </select>
+        </div>
+        <div class="campo">
+            <label for="orden">Ordenar por</label>
+            <select id="orden">
+                <option value="fecha-desc">Más recientes primero</option>
+                <option value="fecha-asc">Más antiguas primero</option>
+                <option value="prioridad">Prioridad (Alta a Baja)</option>
+            </select>
+        </div>
+    </section>
+
+    <!-- LISTA DE TAREAS -->
+    <section class="tarjeta">
+        <h2>Mis tareas</h2>
+        <p id="cargando" class="mensaje" hidden>Cargando tareas desde la API...</p>
+        <p id="lista-vacia" class="mensaje" hidden>No hay tareas para mostrar.</p>
+        <ul id="lista" class="lista">
+            <li class="tarea">Prueba</li>
+            <li class="tarea">Prueba1</li>
+        </ul>
+    </section>
+
+    <!-- type="module" permite usar import / export -->
+    <script type="module" src="js/app.js"></script>
+
+</body>
+</html>

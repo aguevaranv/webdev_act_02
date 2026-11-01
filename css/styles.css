@@ -1,0 +1,103 @@
+/* ==========================================
+   VARIABLES
+========================================== */
+:root {
+    --color-primario: #1e4f73;
+    --color-secundario: #337d78;
+    --color-texto: #243746;
+    --color-fondo: #f1f5f9;
+    --color-blanco: #ffffff;
+    --color-borde: #c9d6e2;
+
+    --alta: #c0392b;
+    --media: #d68910;
+    --baja: #2e86c1;
+
+    --bordes: 10px;
+}
+
+/* ==========================================
+   GENERALES
+========================================== */
+* {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, Helvetica, sans-serif;
+    background-color: var(--color-fondo);
+    color: var(--color-texto);
+    margin: 0;
+}
+
+h1,
+h2 {
+    color: var(--color-primario);
+}
+
+h2 {
+    margin-top: 0;
+    font-size: 1.3rem;
+}
+
+.encabezado {
+    background-color: var(--color-primario);
+    text-align: center;
+    padding: 25px 20px;
+}
+
+.encabezado h1 {
+    color: var(--color-blanco);
+    margin: 0;
+}
+
+.encabezado p {
+    color: #dceaf5;
+    margin: 5px 0 0;
+}
+
+.tarjeta {
+    background-color: var(--color-blanco);
+    border: 1px solid var(--color-borde);
+    border-radius: var(--bordes);
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+/* ==========================================
+   DASHBOARD
+========================================== */
+.dashboard {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.metrica {
+    flex: 1;
+    background-color: var(--color-blanco);
+    border: 1px solid var(--color-borde);
+    border-top: 5px solid var(--color-primario);
+    border-radius: var(--bordes);
+    padding: 15px;
+    text-align: center;
+}
+
+.metrica-pendiente {
+    border-top-color: var(--media);
+}
+
+.metrica-completada {
+    border-top-color: var(--color-secundario);
+}
+
+.metrica-numero {
+    display: block;
+    font-size: 2rem;
+    font-weight: bold;
+}
+
+.metrica-texto {
+    color: #5b6b78;
+}
+
